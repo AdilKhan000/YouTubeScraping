@@ -1,0 +1,12 @@
+# Ignore environment variable file containing API key
+.env
+
+# Ignore the parsed content folder (downloaded videos/subtitles)
+parsed_Content/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
