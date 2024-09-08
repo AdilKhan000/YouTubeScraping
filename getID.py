@@ -1,10 +1,11 @@
-import os
 import argparse
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Set up the API key and other constants
-API_KEY = 'INSERTYOURAPIKEY'
+API_KEY = os.getenv('YOUTUBE_API_KEY')
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 CHARTS = ['mostPopular']  # Available chart options; you can expand this list
@@ -15,7 +16,7 @@ MAX_TOTAL_RESULTS = 1000  # Target total number of results
 def get_youtube_service():
     return build(API_SERVICE_NAME, API_VERSION, developerKey=API_KEY)
 
-# Function to fetch a list of video IDs and save them to a file
+# Function to fetch video IDs based on chart, region, and category
 def fetch_video_ids(youtube, output_file, **kwargs):
     video_ids = []
     page_token = None
@@ -45,6 +46,20 @@ def fetch_video_ids(youtube, output_file, **kwargs):
 
     print(f"Fetched {len(video_ids)} video IDs and appended to {output_file}")
 
+# Function to fetch videos based on keyword search
+def fetch_video_ids_by_keyword(youtube, output_file, keyword, max_results):
+    video_ids = []
+    search_keyword = youtube.search().list(q=keyword, part="id,snippet", maxResults=max_results).execute()
+    for result in search_keyword.get("items", []):
+        if result['id']['kind'] == "youtube#video":
+            video_ids.append(result["id"]["videoId"])
+
+    with open(output_file, 'a') as f:
+        for video_id in video_ids:
+            f.write(video_id + '\n')
+
+    print(f"Fetched {len(video_ids)} video IDs based on keyword '{keyword}' and appended to {output_file}")
+
 def fetch_videos_for_different_categories(youtube, output_file, categories, region_code):
     for category_id in categories:
         print(f"Fetching videos for category ID {category_id}...")
@@ -67,17 +82,22 @@ if __name__ == '__main__':
     parser.add_argument('--regionCode', type=str, default='US', help='ISO 3166-1 alpha-2 country code to filter videos by region')
     parser.add_argument('--videoCategoryId', type=str, help='Comma-separated video category IDs to filter results by category')
     parser.add_argument('--maxResults', type=int, default=50, help='Maximum number of results per page')
+    parser.add_argument('--keyword', type=str, help='Keyword to search for videos')  # New argument for keyword search
 
     args = parser.parse_args()
 
     # Initialize YouTube service
     youtube_service = get_youtube_service()
 
-    # Fetch videos for multiple categories
-    categories = args.videoCategoryId.split(',') if args.videoCategoryId else ['0']  # Default to category ID '0'
-    fetch_videos_for_different_categories(
-        youtube_service,
-        output_file=args.output_file,
-        categories=categories,
-        region_code=args.regionCode
-    )
+    if args.keyword:
+        # If a keyword is provided, fetch videos based on the keyword
+        fetch_video_ids_by_keyword(youtube_service, args.output_file, args.keyword, args.maxResults)
+    else:
+        # Fetch videos for multiple categories if no keyword is provided
+        categories = args.videoCategoryId.split(',') if args.videoCategoryId else ['0']  # Default to category ID '0'
+        fetch_videos_for_different_categories(
+            youtube_service,
+            output_file=args.output_file,
+            categories=categories,
+            region_code=args.regionCode
+        )
