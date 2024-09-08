@@ -65,7 +65,8 @@ python getID.py --output-file video_ids.txt --regionCode US --videoCategoryId 10
 | 43       | Shows                   |
 | 44       | Trailers                |
 
-####Or to get the codes based on specific keyword
+#### Or to get the codes based on specific keyword
+
 Usage
 
 ```bash
