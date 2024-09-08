@@ -99,3 +99,21 @@ Example Command:
 ```bash
 python getID.py --output-file Kannada.txt --keyword "Kannada Travel vlog" --maxResults 50
 ```
+
+### 2. YouTube Subtitle and Audio Downloader
+
+This script downloads subtitles (either manually uploaded or auto-generated) and audio for videos from YouTube using their video IDs. It also supports specifying subtitle language and uses default settings if not provided.
+
+Usage
+
+```bash
+python scraper.py --input-file <video_ids_file> --lang <subtitle_language>
+```
+
+Example Command:
+
+```bash
+python scraper.py --input-file video_ids.txt --lang kn
+```
+
+This command downloads audio and Kannada subtitles (kn) for the videos listed in video_ids.txt. If no language is specified, the script defaults to auto-detected subtitles
